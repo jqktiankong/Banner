@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import com.jqk.bannerlibrary.R;
 import com.jqk.bannerlibrary.utils.GlideApp;
@@ -22,9 +23,10 @@ import java.util.List;
  * Created by Administrator on 2018/4/26.
  */
 
-public class BannerView extends FrameLayout {
+public class BannerView extends RelativeLayout {
 
     private ViewPager viewPager;
+    private MarkView markView;
     private List<View> views;
     private int dataSize;
     private boolean canScroll;
@@ -47,7 +49,7 @@ public class BannerView extends FrameLayout {
 
     public void initView() {
         viewPager = new ViewPager(getContext());
-        ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
         viewPager.setLayoutParams(layoutParams);
         addView(viewPager);
     }
@@ -56,6 +58,17 @@ public class BannerView extends FrameLayout {
 
         views = new ArrayList<View>();
         dataSize = imgsPath.size();
+
+        markView = new MarkView(getContext());
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+        layoutParams.setMargins(0, 0, 0, 10);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        markView.setLayoutParams(layoutParams);
+        markView.setMarks(imgsPath.size());
+        addView(markView);
+
+        markView.setSelect(0);
 
         if (dataSize >= 2) {
             canScroll = true;
@@ -87,6 +100,7 @@ public class BannerView extends FrameLayout {
 
         if (canScroll) {
             viewPager.setCurrentItem(1, false);
+            pos = 1;
         }
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -97,26 +111,27 @@ public class BannerView extends FrameLayout {
 
             @Override
             public void onPageSelected(int position) {
-                Log.d("123", "position = " + position);
-
                 pos = position;
 
             }
 
             @Override
             public void onPageScrollStateChanged(int state) {
-                Log.d("123", "state = " + state);
 
-                if (canScroll) {
-                    //        若viewpager滑动未停止，直接返回
-                    if (state != ViewPager.SCROLL_STATE_IDLE) return;
-//        若当前为第一张，设置页面为倒数第二张
-                    if (pos == 0) {
-                        viewPager.setCurrentItem(views.size() - 2, false);
-                    } else if (pos == views.size() - 1) {
-//        若当前为倒数第一张，设置页面为第二张
-                        viewPager.setCurrentItem(1, false);
-                    }
+                switch (state) {
+                    case ViewPager.SCROLL_STATE_IDLE:
+                        break;
+                    case ViewPager.SCROLL_STATE_DRAGGING:
+                        if (canScroll) {
+                            if (pos == 0) {
+                                viewPager.setCurrentItem(views.size() - 2, false);
+                            } else if (pos == views.size() - 1) {
+                                viewPager.setCurrentItem(1, false);
+                            }
+                        }
+                        break;
+                    case ViewPager.SCROLL_STATE_SETTLING:
+                        break;
                 }
             }
         });
