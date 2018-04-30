@@ -60,7 +60,7 @@ public class MarkView extends LinearLayout {
             ImageView markView = new ImageView(getContext());
 
             if (i == selectNumber) {
-                markView.setBackgroundResource(R.drawable.mark_default);
+                markView.setBackgroundResource(R.drawable.mark_select);
             } else {
                 markView.setBackgroundResource(R.drawable.mark_default);
             }

@@ -28,7 +28,8 @@ public class BannerView extends RelativeLayout {
     private ViewPager viewPager;
     private MarkView markView;
     private List<View> views;
-    private int dataSize;
+    private int imgsPathSize;
+    private int viewSize;
     private boolean canScroll;
     private int pos;
 
@@ -57,7 +58,8 @@ public class BannerView extends RelativeLayout {
     public void setData(List<String> imgsPath) {
 
         views = new ArrayList<View>();
-        dataSize = imgsPath.size();
+        imgsPathSize = imgsPath.size();
+        viewSize = imgsPathSize + 2;
 
         markView = new MarkView(getContext());
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
@@ -68,9 +70,7 @@ public class BannerView extends RelativeLayout {
         markView.setMarks(imgsPath.size());
         addView(markView);
 
-        markView.setSelect(0);
-
-        if (dataSize >= 2) {
+        if (imgsPathSize >= 2) {
             canScroll = true;
         } else {
             canScroll = false;
@@ -83,7 +83,7 @@ public class BannerView extends RelativeLayout {
             views.add(imgView);
         }
 
-        if (dataSize >= 2) {
+        if (imgsPathSize >= 2) {
             View firstImgView = LayoutInflater.from(getContext()).inflate(R.layout.view_img, this, false);
             ImageView imageView = (ImageView) firstImgView.findViewById(R.id.img);
             GlideApp.with(getContext()).load(imgsPath.get(imgsPath.size() - 1)).into(imageView);
@@ -97,10 +97,11 @@ public class BannerView extends RelativeLayout {
 
         BannerAdapter bannerAdapter = new BannerAdapter(views);
         viewPager.setAdapter(bannerAdapter);
-
+        // 初始化图片位置和圆点位置
         if (canScroll) {
             viewPager.setCurrentItem(1, false);
-            pos = 1;
+            markView.setSelect(0);
+            pos = 2;
         }
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -113,6 +114,14 @@ public class BannerView extends RelativeLayout {
             public void onPageSelected(int position) {
                 pos = position;
 
+                if (pos == 0) {
+                    markView.setSelect(viewSize - 3);
+                } else if (pos == viewSize - 1) {
+                    markView.setSelect(0);
+                } else {
+                    Log.d("123", "setMark position = " + (pos - 1));
+                    markView.setSelect(pos - 1);
+                }
             }
 
             @Override
@@ -124,9 +133,11 @@ public class BannerView extends RelativeLayout {
                     case ViewPager.SCROLL_STATE_DRAGGING:
                         if (canScroll) {
                             if (pos == 0) {
-                                viewPager.setCurrentItem(views.size() - 2, false);
-                            } else if (pos == views.size() - 1) {
+                                viewPager.setCurrentItem(viewSize - 2, false);
+                                markView.setSelect(viewSize - 3);
+                            } else if (pos == viewSize - 1) {
                                 viewPager.setCurrentItem(1, false);
+                                markView.setSelect(0);
                             }
                         }
                         break;
