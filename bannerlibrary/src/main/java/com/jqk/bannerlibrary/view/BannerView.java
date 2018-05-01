@@ -1,6 +1,8 @@
 package com.jqk.bannerlibrary.view;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
@@ -18,6 +20,8 @@ import com.jqk.bannerlibrary.utils.GlideApp;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by Administrator on 2018/4/26.
@@ -32,6 +36,18 @@ public class BannerView extends RelativeLayout {
     private int viewSize;
     private boolean canScroll;
     private int pos;
+    private int currentItem;
+
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            if (msg.what == 1000) {
+                Log.d("123", "currentItem = " + currentItem);
+                viewPager.setCurrentItem(currentItem, true);
+            }
+        }
+    };
 
     public BannerView(@NonNull Context context) {
         super(context);
@@ -55,7 +71,7 @@ public class BannerView extends RelativeLayout {
         addView(viewPager);
     }
 
-    public void setData(List<String> imgsPath) {
+    public BannerView setData(List<String> imgsPath) {
 
         views = new ArrayList<View>();
         imgsPathSize = imgsPath.size();
@@ -102,6 +118,7 @@ public class BannerView extends RelativeLayout {
             viewPager.setCurrentItem(1, false);
             markView.setSelect(0);
             pos = 2;
+            currentItem = 1;
         }
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -114,12 +131,13 @@ public class BannerView extends RelativeLayout {
             public void onPageSelected(int position) {
                 pos = position;
 
+                Log.d("123", "PageSelected = " + position);
+
                 if (pos == 0) {
                     markView.setSelect(viewSize - 3);
                 } else if (pos == viewSize - 1) {
                     markView.setSelect(0);
                 } else {
-                    Log.d("123", "setMark position = " + (pos - 1));
                     markView.setSelect(pos - 1);
                 }
             }
@@ -134,10 +152,10 @@ public class BannerView extends RelativeLayout {
                         if (canScroll) {
                             if (pos == 0) {
                                 viewPager.setCurrentItem(viewSize - 2, false);
-                                markView.setSelect(viewSize - 3);
+                                currentItem = viewSize - 2;
                             } else if (pos == viewSize - 1) {
                                 viewPager.setCurrentItem(1, false);
-                                markView.setSelect(0);
+                                currentItem = 1;
                             }
                         }
                         break;
@@ -146,5 +164,20 @@ public class BannerView extends RelativeLayout {
                 }
             }
         });
+
+        return this;
+    }
+
+    public void start() {
+        Timer timer = new Timer();
+        TimerTask task = new TimerTask() {
+
+            @Override
+            public void run() {
+                // 需要做的事:发送消息
+                handler.sendEmptyMessage(1000);
+            }
+        };
+        timer.schedule(task, 2000, 2000);
     }
 }
