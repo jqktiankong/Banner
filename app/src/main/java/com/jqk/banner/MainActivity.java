@@ -27,6 +27,6 @@ public class MainActivity extends AppCompatActivity {
         imgsPath.add("http://e.hiphotos.baidu.com/image/h%3D300/sign=67599edcdd58ccbf04bcb33a29d9bcd4/aa18972bd40735fa324a79d792510fb30f240821.jpg");
         imgsPath.add("http://e.hiphotos.baidu.com/image/h%3D300/sign=95a13e933ad3d539de3d09c30a86e927/ae51f3deb48f8c54c8a5db4236292df5e0fe7f6c.jpg");
 
-        bannerView.setData(imgsPath).start();
+        bannerView.setData(imgsPath);
     }
 }

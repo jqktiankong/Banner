@@ -43,8 +43,12 @@ public class BannerView extends RelativeLayout {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             if (msg.what == 1000) {
+//                if (currentItem == 0) {
+//                    return;
+//                }
                 Log.d("123", "currentItem = " + currentItem);
                 viewPager.setCurrentItem(currentItem, true);
+                currentItem = (currentItem + 1) % viewSize;
             }
         }
     };
@@ -118,7 +122,7 @@ public class BannerView extends RelativeLayout {
             viewPager.setCurrentItem(1, false);
             markView.setSelect(0);
             pos = 2;
-            currentItem = 1;
+            currentItem = 2;
         }
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -130,9 +134,7 @@ public class BannerView extends RelativeLayout {
             @Override
             public void onPageSelected(int position) {
                 pos = position;
-
-                Log.d("123", "PageSelected = " + position);
-
+                Log.d("123", "onPageSelected = " + position);
                 if (pos == 0) {
                     markView.setSelect(viewSize - 3);
                 } else if (pos == viewSize - 1) {
@@ -144,7 +146,6 @@ public class BannerView extends RelativeLayout {
 
             @Override
             public void onPageScrollStateChanged(int state) {
-
                 switch (state) {
                     case ViewPager.SCROLL_STATE_IDLE:
                         break;
@@ -152,10 +153,8 @@ public class BannerView extends RelativeLayout {
                         if (canScroll) {
                             if (pos == 0) {
                                 viewPager.setCurrentItem(viewSize - 2, false);
-                                currentItem = viewSize - 2;
                             } else if (pos == viewSize - 1) {
                                 viewPager.setCurrentItem(1, false);
-                                currentItem = 1;
                             }
                         }
                         break;
@@ -178,6 +177,6 @@ public class BannerView extends RelativeLayout {
                 handler.sendEmptyMessage(1000);
             }
         };
-        timer.schedule(task, 2000, 2000);
+        timer.schedule(task, 1000, 1000);
     }
 }
