@@ -3,5 +3,6 @@
     <color name="markview_background">#00FFFFFF</color>
     <color name="mark_default">#FFFFFF</color>
     <color name="mark_select">#7A7A7A</color>
+    <color name="empty_background">#7A7A7A</color>
 
 </resources>

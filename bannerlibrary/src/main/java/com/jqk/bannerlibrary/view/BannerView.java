@@ -8,13 +8,16 @@ import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.badoo.mobile.util.WeakHandler;
 import com.jqk.bannerlibrary.R;
@@ -33,6 +36,7 @@ public class BannerView extends RelativeLayout {
 
     private ViewPager viewPager;
     private MarkView markView;
+    private LinearLayout emptyView;
     private List<View> views;
     private int imgsPathSize;
     private int viewSize;
@@ -65,101 +69,123 @@ public class BannerView extends RelativeLayout {
         addView(viewPager);
     }
 
-    public BannerView setData(List<String> imgsPath) {
+    public BannerView setImgsPath(List<String> imgsPath) {
 
         views = new ArrayList<View>();
         imgsPathSize = imgsPath.size();
         viewSize = imgsPathSize + 2;
 
-        markView = new MarkView(getContext());
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-        layoutParams.setMargins(0, 0, 0, 10);
-        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        markView.setLayoutParams(layoutParams);
-        markView.setMarks(imgsPath.size());
-        addView(markView);
+        if (imgsPathSize == 0) {
+            emptyView = new LinearLayout(getContext());
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+            emptyView.setLayoutParams(layoutParams);
+            emptyView.setGravity(Gravity.CENTER);
+            emptyView.setBackgroundColor(getResources().getColor(R.color.empty_background));
 
-        if (imgsPathSize >= 2) {
-            canScroll = true;
-        } else {
+            TextView emptyTv = new TextView(getContext());
+            emptyTv.setText(getResources().getString(R.string.empty));
+            emptyTv.setTextSize(20);
+            emptyTv.setTextColor(getResources().getColor(android.R.color.white));
+            emptyView.addView(emptyTv);
+
+            addView(emptyView);
+
             canScroll = false;
-        }
-
-        for (String path : imgsPath) {
-            View imgView = LayoutInflater.from(getContext()).inflate(R.layout.view_img, this, false);
-            ImageView imageView = (ImageView) imgView.findViewById(R.id.img);
-            GlideApp.with(getContext()).load(path).into(imageView);
-            views.add(imgView);
-        }
-
-        if (imgsPathSize >= 2) {
-            View firstImgView = LayoutInflater.from(getContext()).inflate(R.layout.view_img, this, false);
-            ImageView imageView = (ImageView) firstImgView.findViewById(R.id.img);
-            GlideApp.with(getContext()).load(imgsPath.get(imgsPath.size() - 1)).into(imageView);
-            views.add(0, firstImgView);
-
-            View lastImgView = LayoutInflater.from(getContext()).inflate(R.layout.view_img, this, false);
-            ImageView imageView1 = (ImageView) lastImgView.findViewById(R.id.img);
-            GlideApp.with(getContext()).load(imgsPath.get(0)).into(imageView1);
-            views.add(views.size(), lastImgView);
-        }
-
-        BannerAdapter bannerAdapter = new BannerAdapter(views);
-        viewPager.setAdapter(bannerAdapter);
-        // 初始化图片位置和圆点位置
-        if (canScroll) {
-            viewPager.setCurrentItem(1, false);
-            markView.setSelect(0);
-            currentItem = 1;
         } else {
-            markView.setVisibility(View.GONE);
-        }
+            viewPager = new ViewPager(getContext());
+            RelativeLayout.LayoutParams l = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+            viewPager.setLayoutParams(l);
+            addView(viewPager);
 
-        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            markView = new MarkView(getContext());
+            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+            layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+            layoutParams.setMargins(0, 0, 0, 10);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            markView.setLayoutParams(layoutParams);
+            markView.setMarks(imgsPath.size());
+            addView(markView);
 
+            if (imgsPathSize >= 2) {
+                canScroll = true;
+            } else {
+                canScroll = false;
             }
 
-            @Override
-            public void onPageSelected(int position) {
-                currentItem = position;
-                Log.d("123", "onPageSelected = " + position);
-                if (currentItem == 0) {
-                    markView.setSelect(viewSize - 3);
-                } else if (currentItem == viewSize - 1) {
-                    markView.setSelect(0);
-                } else {
-                    markView.setSelect(currentItem - 1);
+            for (String path : imgsPath) {
+                View imgView = LayoutInflater.from(getContext()).inflate(R.layout.view_img, this, false);
+                ImageView imageView = (ImageView) imgView.findViewById(R.id.img);
+                GlideApp.with(getContext()).load(path).into(imageView);
+                views.add(imgView);
+            }
+
+            if (imgsPathSize >= 2) {
+                View firstImgView = LayoutInflater.from(getContext()).inflate(R.layout.view_img, this, false);
+                ImageView imageView = (ImageView) firstImgView.findViewById(R.id.img);
+                GlideApp.with(getContext()).load(imgsPath.get(imgsPath.size() - 1)).into(imageView);
+                views.add(0, firstImgView);
+
+                View lastImgView = LayoutInflater.from(getContext()).inflate(R.layout.view_img, this, false);
+                ImageView imageView1 = (ImageView) lastImgView.findViewById(R.id.img);
+                GlideApp.with(getContext()).load(imgsPath.get(0)).into(imageView1);
+                views.add(views.size(), lastImgView);
+            }
+
+            BannerAdapter bannerAdapter = new BannerAdapter(views);
+            viewPager.setAdapter(bannerAdapter);
+            // 初始化图片位置和圆点位置
+            if (canScroll) {
+                viewPager.setCurrentItem(1, false);
+                markView.setSelect(0);
+                currentItem = 1;
+            } else {
+                markView.setVisibility(View.GONE);
+            }
+
+            viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                @Override
+                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
                 }
-            }
 
-            @Override
-            public void onPageScrollStateChanged(int state) {
-                switch (state) {
-                    case ViewPager.SCROLL_STATE_IDLE:
-                        if (currentItem == 0) {
-                            viewPager.setCurrentItem(viewSize - 2, false);
-                        } else if (currentItem == viewSize - 1) {
-                            viewPager.setCurrentItem(1, false);
-                        }
-                        break;
-                    case ViewPager.SCROLL_STATE_DRAGGING:
-                        if (canScroll) {
+                @Override
+                public void onPageSelected(int position) {
+                    currentItem = position;
+                    Log.d("123", "onPageSelected = " + position);
+                    if (currentItem == 0) {
+                        markView.setSelect(viewSize - 3);
+                    } else if (currentItem == viewSize - 1) {
+                        markView.setSelect(0);
+                    } else {
+                        markView.setSelect(currentItem - 1);
+                    }
+                }
+
+                @Override
+                public void onPageScrollStateChanged(int state) {
+                    switch (state) {
+                        case ViewPager.SCROLL_STATE_IDLE:
                             if (currentItem == 0) {
                                 viewPager.setCurrentItem(viewSize - 2, false);
                             } else if (currentItem == viewSize - 1) {
                                 viewPager.setCurrentItem(1, false);
                             }
-                        }
-                        break;
-                    case ViewPager.SCROLL_STATE_SETTLING:
-                        break;
+                            break;
+                        case ViewPager.SCROLL_STATE_DRAGGING:
+                            if (canScroll) {
+                                if (currentItem == 0) {
+                                    viewPager.setCurrentItem(viewSize - 2, false);
+                                } else if (currentItem == viewSize - 1) {
+                                    viewPager.setCurrentItem(1, false);
+                                }
+                            }
+                            break;
+                        case ViewPager.SCROLL_STATE_SETTLING:
+                            break;
+                    }
                 }
-            }
-        });
-
+            });
+        }
         return this;
     }
 

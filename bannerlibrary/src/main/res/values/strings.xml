@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">bannerlibrary</string>
+
+    <string name="empty">暂无图片</string>
 </resources>
