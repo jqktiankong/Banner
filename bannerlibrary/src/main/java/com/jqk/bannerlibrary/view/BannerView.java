@@ -9,12 +9,14 @@ import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import com.badoo.mobile.util.WeakHandler;
 import com.jqk.bannerlibrary.R;
 import com.jqk.bannerlibrary.utils.GlideApp;
 
@@ -35,23 +37,11 @@ public class BannerView extends RelativeLayout {
     private int imgsPathSize;
     private int viewSize;
     private boolean canScroll;
-    private int pos;
     private int currentItem;
 
-    Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            if (msg.what == 1000) {
-//                if (currentItem == 0) {
-//                    return;
-//                }
-                Log.d("123", "currentItem = " + currentItem);
-                viewPager.setCurrentItem(currentItem, true);
-                currentItem = (currentItem + 1) % viewSize;
-            }
-        }
-    };
+    private long delayTime = 1000;
+
+    private WeakHandler handler = new WeakHandler();
 
     public BannerView(@NonNull Context context) {
         super(context);
@@ -121,8 +111,9 @@ public class BannerView extends RelativeLayout {
         if (canScroll) {
             viewPager.setCurrentItem(1, false);
             markView.setSelect(0);
-            pos = 2;
-            currentItem = 2;
+            currentItem = 1;
+        } else {
+            markView.setVisibility(View.GONE);
         }
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -133,14 +124,14 @@ public class BannerView extends RelativeLayout {
 
             @Override
             public void onPageSelected(int position) {
-                pos = position;
+                currentItem = position;
                 Log.d("123", "onPageSelected = " + position);
-                if (pos == 0) {
+                if (currentItem == 0) {
                     markView.setSelect(viewSize - 3);
-                } else if (pos == viewSize - 1) {
+                } else if (currentItem == viewSize - 1) {
                     markView.setSelect(0);
                 } else {
-                    markView.setSelect(pos - 1);
+                    markView.setSelect(currentItem - 1);
                 }
             }
 
@@ -148,12 +139,17 @@ public class BannerView extends RelativeLayout {
             public void onPageScrollStateChanged(int state) {
                 switch (state) {
                     case ViewPager.SCROLL_STATE_IDLE:
+                        if (currentItem == 0) {
+                            viewPager.setCurrentItem(viewSize - 2, false);
+                        } else if (currentItem == viewSize - 1) {
+                            viewPager.setCurrentItem(1, false);
+                        }
                         break;
                     case ViewPager.SCROLL_STATE_DRAGGING:
                         if (canScroll) {
-                            if (pos == 0) {
+                            if (currentItem == 0) {
                                 viewPager.setCurrentItem(viewSize - 2, false);
-                            } else if (pos == viewSize - 1) {
+                            } else if (currentItem == viewSize - 1) {
                                 viewPager.setCurrentItem(1, false);
                             }
                         }
@@ -167,16 +163,48 @@ public class BannerView extends RelativeLayout {
         return this;
     }
 
-    public void start() {
-        Timer timer = new Timer();
-        TimerTask task = new TimerTask() {
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
 
-            @Override
-            public void run() {
-                // 需要做的事:发送消息
-                handler.sendEmptyMessage(1000);
-            }
-        };
-        timer.schedule(task, 1000, 1000);
+        int action = ev.getAction();
+
+        if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL
+                || action == MotionEvent.ACTION_OUTSIDE) {
+            startAutoPlay();
+        } else if (action == MotionEvent.ACTION_DOWN) {
+            stopAutoPlay();
+        }
+
+        return super.dispatchTouchEvent(ev);
     }
+
+    public void startAutoPlay() {
+        handler.removeCallbacks(task);
+        handler.postDelayed(task, delayTime);
+    }
+
+    public void stopAutoPlay() {
+        handler.removeCallbacks(task);
+    }
+
+    public void start() {
+        if (canScroll) {
+            startAutoPlay();
+        }
+    }
+
+    private final Runnable task = new Runnable() {
+        @Override
+        public void run() {
+            currentItem = currentItem % (viewSize - 1) + 1;
+            Log.i("123", "currentItem:" + currentItem);
+            if (currentItem == 1) {
+                viewPager.setCurrentItem(currentItem, false);
+                handler.post(task);
+            } else {
+                viewPager.setCurrentItem(currentItem, true);
+                handler.postDelayed(task, delayTime);
+            }
+        }
+    };
 }
