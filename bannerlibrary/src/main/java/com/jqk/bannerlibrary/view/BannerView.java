@@ -1,8 +1,6 @@
 package com.jqk.bannerlibrary.view;
 
 import android.content.Context;
-import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
@@ -12,21 +10,17 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.badoo.mobile.util.WeakHandler;
+import com.bumptech.glide.Glide;
 import com.jqk.bannerlibrary.R;
-import com.jqk.bannerlibrary.utils.GlideApp;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Created by Administrator on 2018/4/26.
@@ -42,8 +36,9 @@ public class BannerView extends RelativeLayout {
     private int viewSize;
     private boolean canScroll;
     private int currentItem;
+    private boolean isStart = false;
 
-    private long delayTime = 1000;
+    private long delayTime = 4000;
 
     private WeakHandler handler = new WeakHandler();
 
@@ -69,7 +64,7 @@ public class BannerView extends RelativeLayout {
         addView(viewPager);
     }
 
-    public BannerView setImgsPath(List<String> imgsPath) {
+    public BannerView setImgsPath(List<Object> imgsPath) {
 
         views = new ArrayList<View>();
         imgsPathSize = imgsPath.size();
@@ -112,22 +107,22 @@ public class BannerView extends RelativeLayout {
                 canScroll = false;
             }
 
-            for (String path : imgsPath) {
+            for (Object path : imgsPath) {
                 View imgView = LayoutInflater.from(getContext()).inflate(R.layout.view_img, this, false);
                 ImageView imageView = (ImageView) imgView.findViewById(R.id.img);
-                GlideApp.with(getContext()).load(path).into(imageView);
+                Glide.with(getContext()).load(path).into(imageView);
                 views.add(imgView);
             }
 
             if (imgsPathSize >= 2) {
                 View firstImgView = LayoutInflater.from(getContext()).inflate(R.layout.view_img, this, false);
                 ImageView imageView = (ImageView) firstImgView.findViewById(R.id.img);
-                GlideApp.with(getContext()).load(imgsPath.get(imgsPath.size() - 1)).into(imageView);
+                Glide.with(getContext()).load(imgsPath.get(imgsPath.size() - 1)).into(imageView);
                 views.add(0, firstImgView);
 
                 View lastImgView = LayoutInflater.from(getContext()).inflate(R.layout.view_img, this, false);
                 ImageView imageView1 = (ImageView) lastImgView.findViewById(R.id.img);
-                GlideApp.with(getContext()).load(imgsPath.get(0)).into(imageView1);
+                Glide.with(getContext()).load(imgsPath.get(0)).into(imageView1);
                 views.add(views.size(), lastImgView);
             }
 
@@ -196,7 +191,11 @@ public class BannerView extends RelativeLayout {
 
         if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL
                 || action == MotionEvent.ACTION_OUTSIDE) {
-            startAutoPlay();
+
+            if (isStart) {
+                startAutoPlay();
+            }
+
         } else if (action == MotionEvent.ACTION_DOWN) {
             stopAutoPlay();
         }
@@ -216,7 +215,13 @@ public class BannerView extends RelativeLayout {
     public void start() {
         if (canScroll) {
             startAutoPlay();
+            isStart = true;
         }
+    }
+
+    public void stop() {
+        stopAutoPlay();
+        isStart = false;
     }
 
     private final Runnable task = new Runnable() {
