@@ -2,6 +2,7 @@ package com.jqk.banner;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import com.jqk.bannerlibrary.view.BannerView;
 
@@ -28,5 +29,12 @@ public class MainActivity extends AppCompatActivity {
         imgsPath.add("http://e.hiphotos.baidu.com/image/h%3D300/sign=95a13e933ad3d539de3d09c30a86e927/ae51f3deb48f8c54c8a5db4236292df5e0fe7f6c.jpg");
 
         bannerView.setImgsPath(imgsPath).start();
+
+        bannerView.setOnBannerClickListener(new BannerView.OnBannerClickListener() {
+            @Override
+            public void onClick(String message) {
+                Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

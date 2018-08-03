@@ -37,6 +37,7 @@ public class BannerView extends RelativeLayout {
     private boolean canScroll;
     private int currentItem;
     private boolean isStart = false;
+    private int selectPosition = 1;
 
     private long delayTime = 4000;
 
@@ -64,7 +65,7 @@ public class BannerView extends RelativeLayout {
         addView(viewPager);
     }
 
-    public BannerView setImgsPath(List<Object> imgsPath) {
+    public BannerView setImgsPath(final List<Object> imgsPath) {
 
         views = new ArrayList<View>();
         imgsPathSize = imgsPath.size();
@@ -180,6 +181,14 @@ public class BannerView extends RelativeLayout {
                     }
                 }
             });
+
+            bannerAdapter.setOnClickListener(new BannerAdapter.OnClickListener() {
+                @Override
+                public void onClick(int position) {
+                    String message = (String) imgsPath.get(position - 1);
+                    onBannerClickListener.onClick(message);
+                }
+            });
         }
         return this;
     }
@@ -228,7 +237,6 @@ public class BannerView extends RelativeLayout {
         @Override
         public void run() {
             currentItem = currentItem % (viewSize - 1) + 1;
-            Log.i("123", "currentItem:" + currentItem);
             if (currentItem == 1) {
                 viewPager.setCurrentItem(currentItem, false);
                 handler.post(task);
@@ -238,4 +246,14 @@ public class BannerView extends RelativeLayout {
             }
         }
     };
+
+    private OnBannerClickListener onBannerClickListener;
+
+    public interface OnBannerClickListener {
+        void onClick(String message);
+    }
+
+    public void setOnBannerClickListener(OnBannerClickListener onBannerClickListener) {
+        this.onBannerClickListener = onBannerClickListener;
+    }
 }

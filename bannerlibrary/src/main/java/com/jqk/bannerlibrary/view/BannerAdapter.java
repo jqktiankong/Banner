@@ -18,11 +18,22 @@ public class BannerAdapter extends PagerAdapter {
         this.views = views;
     }
 
+    private OnClickListener onClickListener;
+
+    public interface OnClickListener {
+        void onClick(int position);
+    }
+
+    public void setOnClickListener(OnClickListener onClickListener) {
+        this.onClickListener = onClickListener;
+    }
+
     @Override
     public boolean isViewFromObject(View arg0, Object arg1) {
         // TODO Auto-generated method stub
-        return arg0==arg1;
+        return arg0 == arg1;
     }
+
     //有多少个切换页
     @Override
     public int getCount() {
@@ -38,12 +49,20 @@ public class BannerAdapter extends PagerAdapter {
         //super.destroyItem(container, position, object);
         container.removeView(views.get(position));
     }
+
     //对显示的资源进行初始化
     @Override
-    public Object instantiateItem(ViewGroup container, int position) {
+    public Object instantiateItem(ViewGroup container, final int position) {
         // TODO Auto-generated method stub
         //return super.instantiateItem(container, position);
         container.addView(views.get(position));
+
+        views.get(position).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onClickListener.onClick(position);
+            }
+        });
         return views.get(position);
     }
 }
