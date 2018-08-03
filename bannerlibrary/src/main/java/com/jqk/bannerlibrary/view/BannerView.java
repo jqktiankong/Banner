@@ -24,21 +24,29 @@ import java.util.List;
 
 /**
  * Created by Administrator on 2018/4/26.
+ * 当跟listview，recyclerview滑动冲突时，在父控件中处理，banner没有做处理
  */
 
 public class BannerView extends RelativeLayout {
-
+    // 展示图片视图
     private ViewPager viewPager;
+    // 小圆点视图
     private MarkView markView;
+    // 空视图
     private LinearLayout emptyView;
+    // 填充的总布局
     private List<View> views;
+    // 图片路径的大小
     private int imgsPathSize;
+    // 填充视图的大小
     private int viewSize;
+    // 能不能滑动
     private boolean canScroll;
+    // 当前显示的item
     private int currentItem;
+    // 是否开始滚动
     private boolean isStart = false;
-    private int selectPosition = 1;
-
+    // 滚动时间间隔
     private long delayTime = 4000;
 
     private WeakHandler handler = new WeakHandler();
@@ -71,7 +79,7 @@ public class BannerView extends RelativeLayout {
         imgsPathSize = imgsPath.size();
         viewSize = imgsPathSize + 2;
 
-        if (imgsPathSize == 0) {
+        if (imgsPathSize == 0) { // 没有图片时，显示暂无图片
             emptyView = new LinearLayout(getContext());
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
             emptyView.setLayoutParams(layoutParams);
@@ -87,7 +95,7 @@ public class BannerView extends RelativeLayout {
             addView(emptyView);
 
             canScroll = false;
-        } else {
+        } else { // 有图片时，适配小圆点跟viewpager
             viewPager = new ViewPager(getContext());
             RelativeLayout.LayoutParams l = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
             viewPager.setLayoutParams(l);
@@ -182,11 +190,14 @@ public class BannerView extends RelativeLayout {
                 }
             });
 
+            // 设置banner点击事件
             bannerAdapter.setOnClickListener(new BannerAdapter.OnClickListener() {
                 @Override
                 public void onClick(int position) {
                     String message = (String) imgsPath.get(position - 1);
-                    onBannerClickListener.onClick(message);
+                    if (onBannerClickListener != null) {
+                        onBannerClickListener.onClick(message);
+                    }
                 }
             });
         }
@@ -195,7 +206,7 @@ public class BannerView extends RelativeLayout {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-
+        // 手动滑动时，暂停手动滚动
         int action = ev.getAction();
 
         if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL
@@ -212,15 +223,24 @@ public class BannerView extends RelativeLayout {
         return super.dispatchTouchEvent(ev);
     }
 
+    /**
+     * 开始自动滚动
+     */
     public void startAutoPlay() {
         handler.removeCallbacks(task);
         handler.postDelayed(task, delayTime);
     }
 
+    /**
+     * 关闭自动滚动
+     */
     public void stopAutoPlay() {
         handler.removeCallbacks(task);
     }
 
+    /**
+     * 开始
+     */
     public void start() {
         if (canScroll) {
             startAutoPlay();
@@ -228,6 +248,9 @@ public class BannerView extends RelativeLayout {
         }
     }
 
+    /**
+     * 停止
+     */
     public void stop() {
         stopAutoPlay();
         isStart = false;
@@ -247,6 +270,7 @@ public class BannerView extends RelativeLayout {
         }
     };
 
+    // banner点击事件接口
     private OnBannerClickListener onBannerClickListener;
 
     public interface OnBannerClickListener {
